@@ -2,8 +2,9 @@ import { Controller, Get, Query, Redirect, Req, Res, Session } from '@nestjs/com
 import { AuthService } from './auth.service'
 import { Request, Response } from 'express'
 
-import { InstallQuery, CallbackQuery, CallbackCookie } from '.'
+import { InstallQuery, CallbackQuery, CallbackCookie, AuthSession } from './index.d'
 import { Cookies } from '../../decorators/cookies.decorator'
+import { ValidateAuth } from 'src/server/decorators/callback.decorator'
 
 @Controller('api')
 export class AuthController {
@@ -15,28 +16,27 @@ export class AuthController {
     if(!query.shop) return { url: '/error' }
     const auth = this.auth.generateAuth(query.shop)
     res.cookie('state', auth.state, { sameSite: 'none', secure: true })
-
-    // res.cookie('shop', this.auth.encrypt(query.shop))
     return { url: auth.url }
   }
 
   @Get('auth/callback')
-  async callback(@Query() query: CallbackQuery, @Req() req: Request, @Res() res: Response, @Cookies() cookie: CallbackCookie, @Session() session: {shop: string, token: string}): Promise<any> {
-
-    const auth = await this.auth.createAuth(query, req.cookies.state)
-    if(auth.data) {
-      if(!session.shop && !session.token) {
-        session.shop = auth.data.shop
-        session.token = auth.data.token
+  @Redirect('/')
+  async callback(@Query() query: CallbackQuery, @Session() session: AuthSession, @ValidateAuth() validate: boolean): Promise<any> {
+    if(validate) {
+      const auth = await this.auth.createAuth(query)
+      if(auth.data) {
+        if(!session.shop && !session.token) {
+          session.shop = auth.data.shop
+          session.token = auth.data.token
+        }
+        else {
+          console.log('no shop')
+        }
+        console.log('Session: ', session)
       }
-      else {
-        console.log('no shop')
-      }
-      console.log(cookie)
-      console.log('Session: ', session)
-      res.redirect('/')
     }
-    
-    
+    else {
+      return { url: '/error' }
+    }
   }
 }
