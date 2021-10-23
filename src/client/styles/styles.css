@@ -1,3 +1,23 @@
 body {
   font-size: 42px;
+  font-family: -apple-system, BlinkMacSystemFont, Roboto, 'Segoe UI',
+    'Fira Sans', Avenir, 'Helvetica Neue', 'Lucida Grande', sans-serif;
+}
+
+.wrapper {
+  color: #000;
+  min-height: 10vh;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wrapper h1 {
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.emoji {
+  font-size: 22px;
 }
